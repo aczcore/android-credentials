@@ -1,0 +1,62 @@
+
+Smart Lock para contraseñas en Android
+Página principal
+Productos
+Plataforma de identidad en Google
+Smart Lock para contraseñas en Android
+Guías
+Proporcionar sugerencias de inicio de sesión a un usuario
+Las solicitudes para recuperar credenciales de usuario pueden fallar cuando un usuario aún no ha guardado las credenciales o cuando un usuario aún no se ha registrado en su aplicación. En estas situaciones, use la API de credenciales para recuperar sugerencias de inicio de sesión, como el nombre del usuario y la dirección de correo electrónico. Use estas sugerencias para completar previamente los formularios de inicio de sesión y de registro de su aplicación, acelerando el proceso de incorporación de su aplicación.
+
+En Android 6.0 (Marshmallow) y versiones posteriores, su aplicación no necesita solicitar ningún dispositivo o permisos de tiempo de ejecución para recuperar sugerencias de inicio de sesión con la API de credenciales.
+
+Antes de que empieces
+Configurar un proyecto de Android Studio .
+
+Recuperar sugerencias de inicio de sesión
+Para recuperar las sugerencias de inicio de sesión, primero configure el diálogo del selector de sugerencias creando un HintRequest objeto. Luego, pase el HintRequestobjeto a CredentialsClient.getHintPickerIntent() para intentar solicitar al usuario que elija una dirección de correo electrónico. Finalmente, comience la intención con startIntentSenderForResult().
+
+HintRequest hintRequest = new HintRequest.Builder()
+        .setHintPickerConfig(new CredentialPickerConfig.Builder()
+                .setShowCancelButton(true)
+                .build())
+        .setEmailAddressIdentifierSupported(true)
+        .setAccountTypes(IdentityProviders.GOOGLE)
+        .build();
+
+PendingIntent intent = mCredentialsClient.getHintPickerIntent(hintRequest);
+try {
+    startIntentSenderForResult(intent.getIntentSender(), RC_HINT, null, 0, 0, 0);
+} catch (IntentSender.SendIntentException e) {
+    Log.e(TAG, "Could not start hint picker Intent", e);
+}
+
+Selector de sugerencias de inicio de sesión de Smart Lock
+
+Se le solicita al usuario que elija una dirección de correo electrónico para usar.
+
+Luego, en el onActivityResult()método de la actividad , recupere las sugerencias del Credential.EXTRA_KEYpaquete, verifique si el usuario está en su base de datos de usuarios e inicie la actividad apropiada con la sugerencia de credenciales.
+
+@Override public void onActivityResult ( int requestCode , int resultCode , Intent data ) { super . onActivityResult ( requestCode , resultCode , datos ); si ( requestCode == RC_HINT ) { si ( resultCode == RESULT_OK ) { credencial credencial = datos . getParcelableExtra ( Credencial
+    
+    
+
+      
+          
+            . EXTRA_KEY ); Intento de intención ; // Verifique la ID de usuario en su base de datos de usuarios. if ( userDatabaseContains ( credential . getId ())) {                 intent = new Intent ( this , SignInActivity . class ); } else {                 intent = new Intent ( esto , SignUpNewUserActivity . class ); }             intención .
+            
+            
+              
+   
+              
+   
+            
+putExtra ( "com.mycompany.myapp.SIGNIN_HINTS" , credencial ); 
+            startActivity ( intento ); } else { Iniciar sesión . e ( TAG , "Sugerencia de lectura: NO OK" ); Tostadas . makeText ( esto , "Sugerencia de lectura fallida" , Toast . LENGTH_SHORT ). show (); } } ... }
+          
+             
+              
+        
+    
+
+    
